@@ -7,15 +7,15 @@ use App\Models\BroadcastHost;
 use App\Models\User;
 use App\Models\RadioBroadcast;
 
-class BroadcastHostsSeeder extends Seeder
+class BroadcastHostSeeder extends Seeder
 {
     public function run()
     {
-        $broadcasts = RadioBroadcast::all();
         $users = User::all();
+        $broadcasts = RadioBroadcast::all();
 
         foreach ($broadcasts as $broadcast) {
-            foreach ($users->random(2) as $user) { // Assign 2 random users to each broadcast
+            foreach ($users->random(3) as $user) {
                 BroadcastHost::create([
                     'user_id' => $user->id,
                     'broadcast_id' => $broadcast->id,
@@ -25,3 +25,4 @@ class BroadcastHostsSeeder extends Seeder
         }
     }
 }
+

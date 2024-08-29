@@ -6,6 +6,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class User extends Authenticatable
 {
@@ -41,13 +43,23 @@ class User extends Authenticatable
         ];
     }
 
-    public function roles()
+    public function broadcastHosts(): HasMany
     {
-        return $this->belongsToMany(Role::class, 'user_roles');
+        return $this->hasMany(BroadcastHost::class, 'user_id');
     }
 
-    public function broadcastHosts()
+    public function logStatuses(): HasMany
     {
-        return $this->hasMany(BroadcastHost::class);
+        return $this->hasMany(LogStatus::class, 'user_id');
+    }
+
+    public function comments(): HasMany
+    {
+        return $this->hasMany(Comment::class, 'user_id');
+    }
+
+    public function roles(): BelongsToMany
+    {
+        return $this->belongsToMany(Role::class, 'user_roles', 'user_id', 'role_id');
     }
 }

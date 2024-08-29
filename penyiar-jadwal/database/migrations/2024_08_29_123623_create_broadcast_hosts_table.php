@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('broadcast_hosts', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('user_id');
-            $table->unsignedBigInteger('broadcast_id');
+            $table->foreignId('user_id');
+            $table->foreignId('broadcast_id');
             $table->string('description')->nullable();
             $table->timestamps();
         });

@@ -11,10 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('user_roles', function (Blueprint $table) {
+        Schema::create('approvals', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('radio_broadcast_id');
             $table->foreignId('user_id');
-            $table->foreignId('role_id');
+            $table->enum('role', ['Koordinator Siaran', 'Kabid', 'Kepala Siaran']);
+            $table->enum('status', ['pending', 'approved', 'rejected'])->default('pending');
             $table->timestamps();
         });
     }
@@ -24,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('user_roles');
+        Schema::dropIfExists('approvals');
     }
 };

@@ -5,16 +5,11 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use App\Models\Role;
 
-class RolesSeeder extends Seeder
+class RoleSeeder extends Seeder
 {
     public function run()
     {
-        $roles = [
-            'Penyiar',
-            'Koordinator Siaran',
-            'Kabid',
-            'Kepala Siaran',
-        ];
+        $roles = ['Penyiar', 'Koordinator Siaran', 'Kabid', 'Kepala Siaran'];
 
         foreach ($roles as $role) {
             Role::create([
@@ -24,3 +19,4 @@ class RolesSeeder extends Seeder
         }
     }
 }
+

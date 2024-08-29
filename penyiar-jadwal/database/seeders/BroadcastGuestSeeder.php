@@ -7,7 +7,7 @@ use App\Models\BroadcastGuest;
 use App\Models\RadioBroadcast;
 use Faker\Factory as Faker;
 
-class BroadcastGuestsSeeder extends Seeder
+class BroadcastGuestSeeder extends Seeder
 {
     public function run()
     {
@@ -15,13 +15,14 @@ class BroadcastGuestsSeeder extends Seeder
         $broadcasts = RadioBroadcast::all();
 
         foreach ($broadcasts as $broadcast) {
-            foreach (range(1, 3) as $index) { // Add 3 guests per broadcast
+            foreach (range(1, 3) as $index) {
                 BroadcastGuest::create([
                     'name' => $faker->name,
                     'broadcast_id' => $broadcast->id,
-                    'status' => $faker->randomElement(['confirmed', 'pending']),
+                    'status' => 'pending',
                 ]);
             }
         }
     }
 }
+

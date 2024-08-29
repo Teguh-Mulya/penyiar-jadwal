@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('broadcast_guests', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->unsignedBigInteger('broadcast_id');
+            $table->foreignId('broadcast_id');
             $table->string('status');
             $table->timestamps();
         });
