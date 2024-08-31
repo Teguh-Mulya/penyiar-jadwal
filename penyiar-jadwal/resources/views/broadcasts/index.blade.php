@@ -16,6 +16,7 @@
                         <thead>
                             <tr>
                                 <th>Nama Siaran</th>
+                                <th>Penyiar</th>
                                 <th>Tanggal</th>
                                 <th>Waktu Mulai</th>
                                 <th>Waktu Selesai</th>
@@ -27,6 +28,11 @@
                             @foreach ($broadcasts as $broadcast)
                                 <tr>
                                     <td>{{ $broadcast->broadcast_name }}</td>
+                                    <td>
+                                        @foreach ($broadcast->broadcastHosts as $host)
+                                            {{ $host->user->name }}, 
+                                        @endforeach
+                                    </td>
                                     <td>{{ $broadcast->date->format('d-m-Y') }}</td>
                                     <td>{{ $broadcast->start_time->format('H:i') }}</td>
                                     <td>{{ $broadcast->end_time->format('H:i') }}</td>
@@ -39,6 +45,9 @@
                                             @method('DELETE')
                                             <button type="submit" class="btn btn-danger btn-sm">Hapus</button>
                                         </form>
+                                        @if ($broadcast->broadcastHosts()->where('user_id', auth()->user()->id)->exists())
+                                            <a href="#" class="btn btn-success btn-sm">Ganti Jadwal</a>
+                                        @endif
                                     </td>
                                 </tr>
                             @endforeach
