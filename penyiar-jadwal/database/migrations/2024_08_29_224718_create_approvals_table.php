@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('radio_broadcast_id');
             $table->foreignId('user_id');
+            $table->foreignId('role_id');
             $table->enum('status', ['pending', 'approved', 'rejected'])->default('pending');
             $table->timestamps();
         });

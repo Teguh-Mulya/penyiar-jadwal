@@ -130,30 +130,60 @@ class RadioBroadcastController extends Controller
 
     public function approve(Request $request, RadioBroadcast $broadcast)
     {
-        $request->validate([
+        $userRoles = auth()->user()->roles;
+        $rules = [
             'status' => 'required|in:approved,rejected',
-        ]);
+        ];
 
-        $approval = Approval::where([
-            'radio_broadcast_id' => $broadcast->id,
-            'user_id' => auth()->id(), // Assuming the current user is making the approval
-        ])->first();
-
-        if ($approval) {
-            $approval->status = $request->status;
-            $approval->save();
-
-            // Create log status for approval
-            LogStatus::create([
-                'radio_broadcast_id' => $broadcast->id,
-                'user_id' => auth()->id(),
-                'status' => $request->status,
-                'description' => 'Approval status updated.',
-            ]);
-
-            return redirect()->route('broadcasts.show', $broadcast->id)->with('success', 'Broadcast approval status updated.');
+        if ($userRoles->count() > 1) {
+            // Tambahkan validasi required untuk approval_roles jika pengguna memiliki lebih dari satu peran
+            $rules['approval_roles'] = 'required|array|min:1';
         }
 
-        return redirect()->route('broadcasts.show', $broadcast->id)->with('error', 'Approval not found.');
+        $request->validate($rules);
+
+        if ($request->approval_roles && is_array($request->approval_roles)) {
+            // Jika ada approve_roles, lakukan update massal
+            foreach ($request->approval_roles as $key => $approval_roles) {
+                Approval::where([
+                        'radio_broadcast_id' => $broadcast->id,
+                        'user_id' => auth()->id(),
+                        'role_id' => $approval_roles
+                    ])
+                    ->update(['status' => $request->status]);
+            }
+        } else {
+            // Jika tidak ada approve_roles, update satu persetujuan
+            $approval = Approval::where([
+                'radio_broadcast_id' => $broadcast->id,
+                'user_id' => auth()->id(),
+            ])->first();
+        
+            if ($approval) {
+                $approval->status = $request->status;
+                $approval->save();
+            }
+        }
+
+        // Check if all approvals are 'approved'
+        $allApproved = Approval::where('radio_broadcast_id', $broadcast->id)
+            ->where('status', '!=', 'approved')
+            ->doesntExist(); // Checks if no other statuses exist except 'approved'
+
+        if ($allApproved) {
+            // Update broadcast status to 'approved'
+            $broadcast->status = 'approved';
+            $broadcast->save();
+
+            // Log the broadcast status change
+            LogStatus::create([
+                'radio_broadcast_id' => $broadcast->id,
+                'user_id' => auth()->id(), // Or use a specific user for this log if needed
+                'status' => 'approved',
+                'description' => 'Broadcast status updated to approved.',
+            ]);
+        }
+
+        return redirect()->route('broadcasts.show', $broadcast->id)->with('success', 'Broadcast approval status updated.');
     }
 }

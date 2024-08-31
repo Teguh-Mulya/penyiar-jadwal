@@ -30,7 +30,11 @@
                 <div class="collapse navbar-collapse" id="navbarSupportedContent">
                     <!-- Left Side Of Navbar -->
                     <ul class="navbar-nav me-auto">
-
+                        @if (auth()->user())
+                            <button class="btn btn-danger">
+                                {{ auth()->user()->roles->pluck('role_name')->implode(', ') }}
+                            </button>
+                        @endif
                     </ul>
 
                     <!-- Right Side Of Navbar -->
@@ -76,6 +80,23 @@
         </nav>
 
         <main class="py-4">
+            <div class="row">
+                <div class="col">
+                    @if ($errors->any())
+                        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+                            <strong class="font-bold">Oops!</strong>
+                            <ul class="list-disc ml-5">
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                            <button type="button" class="absolute top-0 right-0 mt-2 mr-4 text-red-500 hover:text-red-700" aria-label="Close">x
+                            </button>
+                        </div>
+                    @endif
+
+                </div>
+            </div>
             @yield('content')
         </main>
     </div>

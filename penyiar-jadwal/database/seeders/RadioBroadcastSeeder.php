@@ -8,7 +8,6 @@ use App\Models\Approval;
 use App\Models\LogStatus;
 use App\Models\Comment;
 use App\Models\User;
-use App\Models\Role;
 use Faker\Factory as Faker;
 
 class RadioBroadcastSeeder extends Seeder
@@ -16,13 +15,12 @@ class RadioBroadcastSeeder extends Seeder
     public function run()
     {
         $faker = Faker::create();
-        $statuses = ['created', 'pending', 'approved', 'ongoing', 'completed', 'canceled', 'rejected'];
         $requiredRoles = ['Koordinator Siaran', 'Kabid', 'Kepala Siaran'];
 
-        // Ambil user yang memiliki roles yang diperlukan
-        $users = User::whereHas('roles', function ($query) use ($requiredRoles) {
+        // Fetch users with their roles that match the required roles
+        $usersWithRoles = User::whereHas('roles', function ($query) use ($requiredRoles) {
             $query->whereIn('role_name', $requiredRoles);
-        })->get();
+        })->with('roles')->get();
 
         foreach (range(1, 10) as $index) {
             $broadcast = RadioBroadcast::create([
@@ -31,35 +29,36 @@ class RadioBroadcastSeeder extends Seeder
                 'date' => $faker->date,
                 'start_time' => $faker->time,
                 'end_time' => $faker->time,
-                'status' => 'created', // Status awal
+                'status' => 'created', // Initial status
             ]);
 
-            // Buat log status untuk broadcast baru
+            // Create initial log status for the new broadcast
             LogStatus::create([
                 'radio_broadcast_id' => $broadcast->id,
-                'user_id' => $users->random()->id,
+                'user_id' => $usersWithRoles->random()->id,
                 'status' => 'created',
                 'description' => 'Broadcast created.',
             ]);
 
-            // Buat approval untuk semua peran yang diperlukan
-            foreach ($users->unique('id') as $user) {
-                // Ambil role ID yang dimiliki user
-                $roleIds = $user->roles->pluck('id')->toArray();
-
-                // Buat approval untuk setiap user
-                $approval = Approval::create([
-                    'radio_broadcast_id' => $broadcast->id,
-                    'user_id' => $user->id,
-                    'status' => 'pending',
-                ]);
-
-                // Hubungkan role ke approval melalui tabel pivot
-                $approval->roles()->sync($roleIds);
+            // Flatten user-role relationships and create approvals
+            $approvals = [];
+            foreach ($usersWithRoles as $user) {
+                foreach ($user->roles as $role) {
+                    if ($role->id != 1) {
+                        $approvals[] = [
+                            'radio_broadcast_id' => $broadcast->id,
+                            'user_id' => $user->id,
+                            'role_id' => $role->id, // Add role_id directly
+                            'status' => 'pending',
+                        ];
+                    }
+                }
             }
+            // Bulk insert all approvals at once
+            Approval::insert($approvals);
 
-            // Buat komentar untuk broadcast
-            foreach ($users->random(2) as $user) {
+            // Create comments for the broadcast
+            foreach ($usersWithRoles->random(2) as $user) {
                 Comment::create([
                     'radio_broadcast_id' => $broadcast->id,
                     'user_id' => $user->id,
@@ -69,3 +68,4 @@ class RadioBroadcastSeeder extends Seeder
         }
     }
 }
+

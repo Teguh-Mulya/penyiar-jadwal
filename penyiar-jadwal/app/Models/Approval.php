@@ -10,7 +10,7 @@ class Approval extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['radio_broadcast_id', 'user_id', 'role', 'status'];
+    protected $fillable = ['radio_broadcast_id', 'user_id', 'role', 'status', 'role_id'];
 
     public function radioBroadcast(): BelongsTo
     {
@@ -20,6 +20,11 @@ class Approval extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function role(): BelongsTo
+    {
+        return $this->belongsTo(Role::class, 'role_id');
     }
 
     public function roles()

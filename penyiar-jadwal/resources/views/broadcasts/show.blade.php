@@ -60,7 +60,7 @@
                                 <div class="modal-body">
                                     @foreach ($broadcast->approvals as $approval)
                                         <div class="border border-gray-300 p-4 mb-4 rounded-lg">
-                                            <p><strong>Role:</strong> {{ $approval->roles->pluck('role_name')->join(', ') }}</p>
+                                            <p><strong>Role:</strong> {{ $approval->role->role_name }}</p>
                                             <p><strong>Status:</strong> {{ $approval->status }}</p>
                                             <p><strong>Approver:</strong> {{ $approval->user->name }}</p>
                                         </div>
@@ -95,16 +95,16 @@
                 </section>
 
                 <section class="mb-6">
-                    <!-- Button for opening approval modals -->
                     @php
                         $approvalConfig = $broadcast->approval_configuration;
+                        $userRoles = Auth::user()->roles; // Ambil peran pengguna
                     @endphp
                     @foreach ($approvalConfig as $role => $config)
                         @if (Auth::user()->hasRole($config['role_name']) && $config['condition'])
                             <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#approveModal_{{ $config['id'] }}">
                                 {{ $config['button_text'] }}
                             </button>
-
+                
                             <!-- Modal Bootstrap -->
                             <div class="modal fade" id="approveModal_{{ $config['id'] }}" tabindex="-1" aria-labelledby="approveModalLabel_{{ $role }}" aria-hidden="true">
                                 <div class="modal-dialog">
@@ -118,6 +118,23 @@
                                                 @csrf
                                                 <input type="hidden" name="status" value="approved">
                                                 <p>Apakah Anda yakin ingin menyetujui jadwal ini?</p>
+                
+                                                @if ($userRoles->count() > 1) <!-- Cek jika pengguna memiliki lebih dari satu peran -->
+                                                    <div class="mb-3">
+                                                        <label for="approval_roles" class="form-label">Setujui sebagai:</label>
+                                                        @foreach ($userRoles as $role)
+                                                            @if ($role->id != 1)
+                                                                <div class="form-check">
+                                                                    <input class="form-check-input" type="checkbox" name="approval_roles[]" id="role_{{ $role->id }}" value="{{ $role->id }}">
+                                                                    <label class="form-check-label" for="role_{{ $role->id }}">
+                                                                        {{ $role->role_name }}
+                                                                    </label>
+                                                                </div>
+                                                            @endif
+                                                        @endforeach
+                                                    </div>
+                                                @endif
+                
                                                 <div class="modal-footer">
                                                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
                                                     <button type="submit" class="btn btn-primary">Setujui Jadwal</button>
@@ -130,6 +147,7 @@
                         @endif
                     @endforeach
                 </section>
+                
             </div>
         </div>
     </div>

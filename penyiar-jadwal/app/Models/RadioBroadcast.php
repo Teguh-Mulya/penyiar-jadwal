@@ -44,54 +44,52 @@ class RadioBroadcast extends Model
     public function comments(): HasMany
     {
         return $this->hasMany(Comment::class, 'radio_broadcast_id');
-    }public function getApprovedCountByRole(string $roleName): int
+    }
+    
+    public function getApprovedCountByRole(string $roleId): int
     {
         return $this->approvals()
-            ->whereHas('roles', function($query) use ($roleName) {
-                $query->where('role_name', $roleName);
-            })
+            ->where('role_id', $roleId)
             ->where('status', 'approved')
             ->count();
     }
     
-    public function getTotalCountByRole(string $roleName): int
+    public function getTotalCountByRole(string $roleId): int
     {
         return $this->approvals()
-            ->whereHas('roles', function($query) use ($roleName) {
-                $query->where('role_name', $roleName);
-            })
+            ->where('role_id', $roleId)
             ->count();
     }
     
     // Accessor methods
     public function getKabidApprovedCountAttribute()
     {
-        return $this->getApprovedCountByRole('Kabid');
+        return $this->getApprovedCountByRole(3);
     }
     
     public function getKabidTotalCountAttribute()
     {
-        return $this->getTotalCountByRole('Kabid');
+        return $this->getTotalCountByRole(3);
     }
     
     public function getKoordinatorSiaranApprovedCountAttribute()
     {
-        return $this->getApprovedCountByRole('Koordinator Siaran');
+        return $this->getApprovedCountByRole(2);
     }
     
     public function getKoordinatorSiaranTotalCountAttribute()
     {
-        return $this->getTotalCountByRole('Koordinator Siaran');
+        return $this->getTotalCountByRole(2);
     }
     
     public function getKepalaSiaranApprovedCountAttribute()
     {
-        return $this->getApprovedCountByRole('Kepala Siaran');
+        return $this->getApprovedCountByRole(4);
     }
     
     public function getKepalaSiaranTotalCountAttribute()
     {
-        return $this->getTotalCountByRole('Kepala Siaran');
+        return $this->getTotalCountByRole(4);
     }    
 
     public function getIsApprovedAttribute()
