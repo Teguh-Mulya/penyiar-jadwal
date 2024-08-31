@@ -21,6 +21,11 @@ class Approval extends Model
     {
         return $this->belongsTo(User::class, 'user_id');
     }
+
+    public function roles()
+    {
+        return $this->belongsToMany(Role::class, 'approval_role');
+    }
 }
 
 

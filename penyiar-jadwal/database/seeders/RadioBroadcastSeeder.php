@@ -17,8 +17,12 @@ class RadioBroadcastSeeder extends Seeder
     {
         $faker = Faker::create();
         $statuses = ['created', 'pending', 'approved', 'ongoing', 'completed', 'canceled', 'rejected'];
-        $roles = Role::whereIn('role_name', ['Koordinator Siaran', 'Kabid', 'Kepala Siaran'])->get(); // Ambil role yang diperlukan
-        $users = User::all();
+        $requiredRoles = ['Koordinator Siaran', 'Kabid', 'Kepala Siaran'];
+
+        // Ambil user yang memiliki roles yang diperlukan
+        $users = User::whereHas('roles', function ($query) use ($requiredRoles) {
+            $query->whereIn('role_name', $requiredRoles);
+        })->get();
 
         foreach (range(1, 10) as $index) {
             $broadcast = RadioBroadcast::create([
@@ -30,7 +34,7 @@ class RadioBroadcastSeeder extends Seeder
                 'status' => 'created', // Status awal
             ]);
 
-            // Create log status untuk broadcast baru
+            // Buat log status untuk broadcast baru
             LogStatus::create([
                 'radio_broadcast_id' => $broadcast->id,
                 'user_id' => $users->random()->id,
@@ -39,15 +43,19 @@ class RadioBroadcastSeeder extends Seeder
             ]);
 
             // Buat approval untuk semua peran yang diperlukan
-            foreach ($roles as $role) {
-                foreach ($users->whereIn('id', $users->pluck('id')->random(2)) as $user) {
-                    Approval::create([
-                        'radio_broadcast_id' => $broadcast->id,
-                        'user_id' => $user->id,
-                        'role' => $role->role_name, // Gunakan nama role dari database
-                        'status' => 'pending',
-                    ]);
-                }
+            foreach ($users->unique('id') as $user) {
+                // Ambil role ID yang dimiliki user
+                $roleIds = $user->roles->pluck('id')->toArray();
+
+                // Buat approval untuk setiap user
+                $approval = Approval::create([
+                    'radio_broadcast_id' => $broadcast->id,
+                    'user_id' => $user->id,
+                    'status' => 'pending',
+                ]);
+
+                // Hubungkan role ke approval melalui tabel pivot
+                $approval->roles()->sync($roleIds);
             }
 
             // Buat komentar untuk broadcast
