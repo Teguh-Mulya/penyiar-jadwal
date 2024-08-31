@@ -44,7 +44,7 @@ class RadioBroadcastController extends Controller
         ]);
 
         // Create approval entries for required roles
-        $roles = Role::whereIn('role_name', ['Koordinator Siaran', 'Kabid', 'Kepala Siaran'])->get();
+        $roles = Role::whereIn('role_name', ['Koordinator Siaran', 'Kepala Bidang Siaran', 'Kepala Stasiun'])->get();
         $users = User::whereHas('roles', function ($query) use ($roles) {
             $query->whereIn('role_id', $roles->pluck('id'));
         })->get();

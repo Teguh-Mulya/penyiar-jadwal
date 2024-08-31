@@ -15,7 +15,7 @@ class RadioBroadcastSeeder extends Seeder
     public function run()
     {
         $faker = Faker::create();
-        $requiredRoles = ['Koordinator Siaran', 'Kabid', 'Kepala Siaran'];
+        $requiredRoles = ['Koordinator Siaran', 'Kepala Bidang Siaran', 'Kepala Stasiun'];
 
         // Fetch users with their roles that match the required roles
         $usersWithRoles = User::whereHas('roles', function ($query) use ($requiredRoles) {

@@ -41,8 +41,8 @@
                     
                     <div class="border border-gray-300 p-4 mb-4 rounded-lg">
                         <p><strong>Total Approval Koordinator Siaran:</strong> {{ $broadcast->koordinator_siaran_approved_count }} dari {{ $broadcast->koordinator_siaran_total_count }}</p>
-                        <p><strong>Total Approval Kabid:</strong> {{ $broadcast->kabid_approved_count }} dari {{ $broadcast->kabid_total_count }}</p>
-                        <p><strong>Total Approval Kepala Siaran:</strong> {{ $broadcast->kepala_siaran_approved_count }} dari {{ $broadcast->kepala_siaran_total_count }}</p>
+                        <p><strong>Total Approval Kepala Bidang Siaran:</strong> {{ $broadcast->kabid_approved_count }} dari {{ $broadcast->kabid_total_count }}</p>
+                        <p><strong>Total Approval Kepala Stasiun:</strong> {{ $broadcast->kepala_siaran_approved_count }} dari {{ $broadcast->kepala_siaran_total_count }}</p>
                     </div>
                     <!-- Button trigger modal -->
                     <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">

@@ -107,19 +107,19 @@ class RadioBroadcast extends Model
                 'button_text' => 'Setujui Jadwal',
                 'role_name' => 'Koordinator Siaran'
             ],
-            'Kabid' => [
+            'Kepala Bidang Siaran' => [
                 'id' => '2',
                 'condition' => $this->is_approved && $this->koordinator_siaran_approved_count == $this->koordinator_siaran_total_count,
                 'role_id' => auth()->user()->roles()->first()->id,
                 'button_text' => 'Setujui Jadwal',
-                'role_name' => 'Kabid'
+                'role_name' => 'Kepala Bidang Siaran'
             ],
-            'Kepala Siaran' => [
+            'Kepala Stasiun' => [
                 'id' => '3',
                 'condition' => $this->is_approved && $this->kabid_approved_count == $this->kabid_total_count,
                 'role_id' => auth()->user()->roles()->first()->id,
                 'button_text' => 'Setujui Jadwal',
-                'role_name' => 'Kepala Siaran'
+                'role_name' => 'Kepala Stasiun'
             ]
         ];
     }
