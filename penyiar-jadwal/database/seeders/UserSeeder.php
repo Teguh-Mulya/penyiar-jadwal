@@ -13,7 +13,8 @@ class UserSeeder extends Seeder
     {
         // Define user data with roles and status
         $users = [
-            ['username' => 'user1', 'name' => 'Ahmad Nur', 'email' => 'ahmad.nur@example.com', 'password' => 'password', 'roles' => ['Kepala Stasiun'], 'status' => 'active'],
+
+            ['username' => 'user1', 'name' => 'Widi Kurniawan', 'email' => 'widi.kur@example.com', 'password' => 'password', 'roles' => ['Kepala Stasiun'], 'status' => 'active'],
             ['username' => 'user2', 'name' => 'Budi Santoso', 'email' => 'budi.santoso@example.com', 'password' => 'password', 'roles' => ['Kepala Bidang Siaran'], 'status' => 'inactive'],
             ['username' => 'user3', 'name' => 'Citra Dewi', 'email' => 'citra.dewi@example.com', 'password' => 'password', 'roles' => ['Koordinator Siaran'], 'status' => 'active'],
             ['username' => 'user4', 'name' => 'Dani Putra', 'email' => 'dani.putra@example.com', 'password' => 'password', 'roles' => ['Penyiar'], 'status' => 'inactive'],

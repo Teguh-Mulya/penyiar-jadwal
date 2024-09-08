@@ -26,7 +26,7 @@ class RadioBroadcastSeeder extends Seeder
             $broadcast = RadioBroadcast::create([
                 'broadcast_name' => $faker->word,
                 'description' => $faker->sentence,
-                'date' => $faker->date,
+                'date' => now(),
                 'start_time' => $faker->time,
                 'end_time' => $faker->time,
                 'status' => 'created', // Initial status

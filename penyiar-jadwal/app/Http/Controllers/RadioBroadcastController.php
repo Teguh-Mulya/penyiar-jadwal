@@ -9,12 +9,14 @@ use App\Models\LogStatus;
 use App\Models\Comment;
 use App\Models\Role;
 use App\Models\User;
+use App\Models\GantiJadwal;
+use PDF;
 
 class RadioBroadcastController extends Controller
 {
     public function index()
     {
-        $broadcasts = RadioBroadcast::with(['logStatuses', 'comments', 'approvals'])->get();
+        $broadcasts = RadioBroadcast::with(['logStatuses', 'comments', 'approvals', 'gantiJadwals'])->get();
         return view('broadcasts.index', compact('broadcasts'));
     }
 
@@ -185,5 +187,49 @@ class RadioBroadcastController extends Controller
         }
 
         return redirect()->route('broadcasts.show', $broadcast->id)->with('success', 'Broadcast approval status updated.');
+    }
+
+    // export PDF
+    public function exportPDF() 
+    {
+        // Mendapatkan tanggal hari ini
+        $today = \Carbon\Carbon::today();
+        
+        // Mengambil hanya siaran yang terjadi pada hari ini
+        $data = RadioBroadcast::whereDate('date', $today)->get();
+    
+        // Memuat tampilan dengan data yang sudah difilter
+        $pdf = PDF::loadView('broadcasts.pdf', ['data' => $data]);
+            
+        // Menampilkan PDF yang sudah dihasilkan
+        return $pdf->stream('jadwal.pdf');
+    }
+
+    public function gantiJadwal(Request $request, RadioBroadcast $broadcast)
+    {
+        // Validasi data input
+        $validated = $request->validate([
+            'broadcaster_id' => 'required|exists:users,id', // Asumsikan penyiar adalah pengguna
+            'reason' => 'required|string|max:255',
+        ]);
+
+        // Menambahkan ID broadcast ke data yang divalidasi
+        $validated['broadcast_id'] = $broadcast->id;
+        $validated['status'] = 'submit';
+        $validated['submitter_id'] = auth()->user()->id;
+
+        // Simpan data ke tabel ganti_jadwal
+        GantiJadwal::create($validated);
+
+        // Log the broadcast status change
+        LogStatus::create([
+            'radio_broadcast_id' => $broadcast->id,
+            'user_id' => auth()->id(), // Or use a specific user for this log if needed
+            'status' => 'submit',
+            'description' => 'permintaan ganti jadwal',
+        ]);
+
+        // Redirect dengan pesan sukses
+        return redirect()->route('broadcasts.index')->with('success', 'Jadwal siaran berhasil diganti.');
     }
 }
