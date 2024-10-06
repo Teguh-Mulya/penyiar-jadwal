@@ -42,11 +42,18 @@
                                         </form>
                                     </td>
                                     <td>
-                                        @if (!$broadcast->broadcastHosts()->where('user_id', auth()->user()->id)->exists() && !$broadcast->gantiJadwals()->where('submitter_id', auth()->user()->id)->whereIn('status',['rejected','submit'])->exists())
+                                        <!-- @if (!$broadcast->broadcastHosts()->where('user_id', auth()->user()->id)->exists() && !$broadcast->gantiJadwals()->where('submitter_id', auth()->user()->id)->whereIn('status',['rejected','submit'])->exists())
                                             <a href="#" class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#scheduleModal">Ganti Jadwal Siaran</a>
                                         @else
                                             {{$broadcast->gantiJadwals()->where('submitter_id', auth()->user()->id)->whereIn('status',['rejected','submit'])->latest()->first()?->status}}
-                                            @endif
+                                            @endif -->
+                                        @if ($broadcast->broadcastHosts()->where('user_id', auth()->user()->id)->exists() && !$broadcast->gantiJadwals()->where('submitter_id', auth()->user()->id)->whereIn('status',['rejected','submit'])->exists())
+                                            <a href="#" class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#scheduleModal">Ganti Jadwal Siaran</a>
+                                        @endif
+
+                                        @if($koor && ($broadcast->gantiJadwals()->count() > 0))
+                                            <a href="#" class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#checkScheduleModal">Lihat</a>
+                                        @endif
                                     </td>
 
                                     <!-- Modal Bootstrap -->
@@ -64,8 +71,8 @@
                                                             <label for="broadcasterSelect" class="form-label">Pilih Penyiar</label>
                                                             <select class="form-select" id="broadcasterSelect" name="broadcaster_id" required>
                                                                 <option value="" disabled selected>Pilih penyiar...</option>
-                                                                @foreach ($broadcast->broadcastHosts as $host)
-                                                                    <option value="{{ $host->user->id }}">{{ $host->user->name }}</option>
+                                                                @foreach ($hosts as $host)
+                                                                    <option value="{{ $host->id }}">{{ $host->name }}</option>
                                                                 @endforeach
                                                             </select>
                                                         </div>
@@ -84,7 +91,40 @@
                                         </div>
                                     </div>
 
-
+                                    <div class="modal fade" id="checkScheduleModal" tabindex="-1" aria-labelledby="checkScheduleModal" aria-hidden="true">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title" id="checkScheduleModal">Ganti Jadwal Siaran</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                <div class="row mb-4">
+        <div class="col">
+            <h2>Broadcast List</h2>
+        </div>
+    </div>
+    <div class="row">
+        @foreach ($broadcast->gantiJadwals as $gantiJadwal)
+            <div class="col-12 mb-3 border p-3">
+                <div class="row">
+                    <div class="col">
+                        <strong>Submitter:</strong> {{ $gantiJadwal->submitter->name }}
+                    </div>
+                    <div class="col">
+                        <strong>Broadcaster:</strong> {{ $gantiJadwal->broadcaster->name }}
+                    </div>
+                    <div class="col-auto">
+                        <button type="button" class="btn btn-primary">Approve</button>
+                    </div>
+                </div>
+            </div>
+        @endforeach
+    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                             </tr>
                             @endforeach
                         </tbody>

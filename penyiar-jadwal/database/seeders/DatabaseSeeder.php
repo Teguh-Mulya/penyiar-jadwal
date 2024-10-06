@@ -16,9 +16,9 @@ class DatabaseSeeder extends Seeder
         $this->call([
             RoleSeeder::class,
             UserSeeder::class,
-            RadioBroadcastSeeder::class,
-            BroadcastHostSeeder::class,
-            BroadcastGuestSeeder::class,
+            // RadioBroadcastSeeder::class,
+            // BroadcastHostSeeder::class,
+            // BroadcastGuestSeeder::class,
         ]);
     }
 }

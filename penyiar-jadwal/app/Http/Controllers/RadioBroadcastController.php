@@ -11,18 +11,44 @@ use App\Models\Role;
 use App\Models\User;
 use App\Models\GantiJadwal;
 use PDF;
+use App\Models\BroadcastHost;
+use App\Models\BroadcastGuest;
 
 class RadioBroadcastController extends Controller
 {
     public function index()
     {
-        $broadcasts = RadioBroadcast::with(['logStatuses', 'comments', 'approvals', 'gantiJadwals'])->get();
-        return view('broadcasts.index', compact('broadcasts'));
+        $broadcasts = RadioBroadcast::with(['logStatuses', 'comments', 'approvals', 'gantiJadwals','broadcastHosts'])->get();
+        $requiredRoles = ['Penyiar'];
+
+        // Fetch users with their roles that match the required roles
+        $hosts = User::whereHas('roles', function ($query) use ($requiredRoles) {
+            $query->whereIn('role_name', $requiredRoles);
+        })->get();
+
+        $koor = auth()->user()->whereHas('roles', function ($query) use ($requiredRoles) {
+            $query->whereIn('role_name', ['Koordinator Siaran']);
+        })->first();
+        
+        // foreach($broadcasts as $item){
+        //     dd($item->broadcast_name);
+        // }
+        return view('broadcasts.index', [
+            'broadcasts' => $broadcasts,
+            'hosts' => $hosts,
+            'koor' => $koor
+        ]);
     }
 
     public function create()
     {
-        return view('broadcasts.create');
+        $requiredRoles = ['Penyiar'];
+
+        // Fetch users with their roles that match the required roles
+        $hosts = User::whereHas('roles', function ($query) use ($requiredRoles) {
+            $query->whereIn('role_name', $requiredRoles);
+        })->get();
+        return view('broadcasts.create',['hosts'=>$hosts]);
     }
 
     public function store(Request $request)
@@ -36,7 +62,27 @@ class RadioBroadcastController extends Controller
         ]);
 
         $broadcast = RadioBroadcast::create($request->all());
+        // Simpan penyiar yang dipilih
+        foreach ($request->hosts as $hostId) {
+            // Mengambil user yang bersangkutan
+            $user = User::find($hostId);
 
+            // Simpan ke dalam tabel BroadcastHost
+            BroadcastHost::create([
+                'user_id' => $user->id,
+                'broadcast_id' => $broadcast->id,
+                'description' => 'Host for ' . $broadcast->broadcast_name,
+            ]);
+        }
+
+        // Simpan bintang tamu
+        foreach ($request->guest_hosts as $guest) {
+            BroadcastGuest::create([
+                'name' => $guest['name'],
+                'broadcast_id' => $broadcast->id,
+                'status' => $guest['status'],
+            ]);
+        }
         // Create initial log status
         LogStatus::create([
             'radio_broadcast_id' => $broadcast->id,
@@ -45,23 +91,29 @@ class RadioBroadcastController extends Controller
             'description' => 'Broadcast created.',
         ]);
 
-        // Create approval entries for required roles
-        $roles = Role::whereIn('role_name', ['Koordinator Siaran', 'Kepala Bidang Siaran', 'Kepala Stasiun'])->get();
-        $users = User::whereHas('roles', function ($query) use ($roles) {
-            $query->whereIn('role_id', $roles->pluck('id'));
-        })->get();
+        
+        $requiredRoles = ['Koordinator Siaran', 'Kepala Bidang Siaran', 'Kepala Stasiun'];
 
-        foreach ($users as $user) {
-            $roleIds = $user->roles->pluck('id')->toArray();
+        // Fetch users with their roles that match the required roles
+        $usersWithRoles = User::whereHas('roles', function ($query) use ($requiredRoles) {
+            $query->whereIn('role_name', $requiredRoles);
+        })->with('roles')->get();
 
-            $approval = Approval::create([
-                'radio_broadcast_id' => $broadcast->id,
-                'user_id' => $user->id,
-                'status' => 'pending',
-            ]);
-
-            $approval->roles()->sync($roleIds);
+        $approvals = [];
+        foreach ($usersWithRoles as $user) {
+            foreach ($user->roles as $role) {
+                if ($role->id != 1) {
+                    $approvals[] = [
+                        'radio_broadcast_id' => $broadcast->id,
+                        'user_id' => $user->id,
+                        'role_id' => $role->id, // Add role_id directly
+                        'status' => 'pending',
+                    ];
+                }
+            }
         }
+        // Bulk insert all approvals at once
+        Approval::insert($approvals);
 
         return redirect()->route('broadcasts.index')->with('success', 'Broadcast created successfully.');
     }
